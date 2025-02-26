@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"restrocheck/internal/http-server/handlers"
-	mwLogger "restrocheck/internal/http-server/middleware/logger"
+	"restrocheck/internal/transport/rest/handlers"
+	mwLogger "restrocheck/internal/transport/rest/middleware/logger"
 	"restrocheck/internal/repository"
 	"restrocheck/internal/service"
 	"restrocheck/internal/storage"
