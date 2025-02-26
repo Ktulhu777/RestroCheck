@@ -12,6 +12,7 @@ type WaiterService interface {
 	FetchWaiter(ctx context.Context, id int64) (*core.Waiter, error)
 	ChangeWaiter(ctx context.Context, id int64, req core.UpdateWaiterRequest) (*core.Waiter, error)
 	RemoveWaiter(ctx context.Context, id int64) (int64, error)
+	FetchAllWaiters(ctx context.Context) ([]core.Waiter, error)
 }
 
 type waiterService struct {
@@ -68,4 +69,13 @@ func (w *waiterService) RemoveWaiter(ctx context.Context, id int64) (int64, erro
 		return 0, err
 	}
 	return id, nil
+}
+
+
+func (w  *waiterService) FetchAllWaiters(ctx context.Context) ([]core.Waiter, error) {
+	waiters, err := w.repo.FetchAllWaiters(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return waiters, nil
 }

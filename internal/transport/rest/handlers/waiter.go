@@ -192,5 +192,47 @@ func (wh *WaiterHandler) ChangeWaiter() http.HandlerFunc {
 			Response: resp.OK(),
 			Waiter:   wtr,
 		})
-	}	
+	}
+}
+
+func (wh *WaiterHandler) FetchAllWaiters() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const fn = "handlers.waiter.FetchAllWaiters"
+
+		log := wh.log.With(
+			slog.String("fn", fn),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		waiters, err := wh.service.FetchAllWaiters(ctx)
+		if err != nil {
+			if errors.Is(err, core.ErrEmptyCollectionWaiter) {
+				render.JSON(w, r, core.FetchAllResponse{
+					Response: resp.OK(),
+					Waiters:  []core.PartialWaiter{},
+				})
+				return
+			}
+			resp.RespondWithError(log, w, r, http.StatusInternalServerError, err, "failed to fetch all waiters")
+			return
+		}
+
+		// Конвертируем полный список официантов в срез PartialWaiter
+		waitersResponse := make([]core.PartialWaiter, len(waiters))
+		for i, w := range waiters {
+			waitersResponse[i] = core.PartialWaiter{
+				ID:        w.ID,
+				FirstName: w.FirstName,
+				LastName:  w.LastName,
+			}
+		}
+
+		render.JSON(w, r, core.FetchAllResponse{
+			Response: resp.OK(),
+			Waiters:  waitersResponse,
+		})
+	}
 }

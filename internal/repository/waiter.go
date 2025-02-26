@@ -15,6 +15,7 @@ type WaiterRepo interface {
 	FetchWaiter(ctx context.Context, pk int64) (*core.Waiter, error)
 	ChangeWaiter(ctx context.Context, id int64, firstName, lastName, phone *string, hireDate *time.Time, salary *float64) (*core.Waiter, error)
 	RemoveWaiter(ctx context.Context, pk int64) (int64, error)
+	FetchAllWaiters(ctx context.Context) ([]core.Waiter, error)
 }
 
 type WaiterRepository struct {
@@ -160,4 +161,39 @@ func (w *WaiterRepository) RemoveWaiter(ctx context.Context, pk int64) (int64, e
 	}
 
 	return deletePK, nil
+}
+
+func (w *WaiterRepository) FetchAllWaiters(ctx context.Context) ([]core.Waiter, error) {
+	const fn = "internal.repository.waiter.FetchAllWaiters"
+
+	const query = `
+		SELECT id, first_name, last_name
+		FROM waiters
+	`
+
+	rows, err := w.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("%s: failed to fetch waiters: %w", fn, err)
+	}
+	defer rows.Close()
+
+	var waiters []core.Waiter
+
+	for rows.Next() {
+		var waiter core.Waiter
+		if err := rows.Scan(&waiter.ID, &waiter.FirstName, &waiter.LastName); err != nil {
+			return nil, fmt.Errorf("%s: failed to scan waiter: %w", fn, err)
+		}
+		waiters = append(waiters, waiter)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("%s: error iterating over waiters: %w", fn, err)
+	}
+
+	if len(waiters) == 0 {
+		return nil, fmt.Errorf("%s: %w", fn, core.ErrEmptyCollectionWaiter)
+	}
+
+	return waiters, nil
 }

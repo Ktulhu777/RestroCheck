@@ -48,6 +48,7 @@ func NewApp(log *slog.Logger, storage *storage.Storage, address string, timeout,
 	router.Get("/waiter/{id}", waiterHandler.FetchWaiter())
 	router.Patch("/waiter/{id}", waiterHandler.ChangeWaiter())
 	router.Delete("/waiter/{id}", waiterHandler.RemoveWaiter())
+	router.Get("/waiters", waiterHandler.FetchAllWaiters())
 
 	srv := &http.Server{
 		Addr:         address,
