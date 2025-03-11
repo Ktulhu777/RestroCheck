@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	ssogrpc "restrocheck/internal/app/grpc/sso"
 	"restrocheck/internal/app/rest"
 	"restrocheck/internal/config"
 	"restrocheck/internal/storage/postgresql"
@@ -21,6 +22,20 @@ func main() {
 	log := logger.SetupLogger(cfg.Env)
 	log.Info("starting logger", slog.String("env", cfg.Env))
 
+	ssoClient, err := ssogrpc.NewClient(
+		log,
+		cfg.Clients.SSO.Address,
+		cfg.Clients.SSO.Timeout,
+		cfg.Clients.SSO.RetriesCount,
+	)
+
+	if err != nil {
+		log.Error("failed to create SSO gRPC client", sl.Err(err))
+		os.Exit(1)
+	}
+	log.Info("SSO gRPC client successfully initialized")
+	log.Info("SSO gRPC client created", slog.Any("client", ssoClient))
+
 	storage, err := postgresql.NewStorage(cfg)
 	if err != nil {
 		log.Error("failed to init storage", sl.Err(err))
@@ -28,7 +43,7 @@ func main() {
 	}
 	log.Info("DataBase success connection")
 
-	app := rest.NewApp(log, storage, cfg.Address, cfg.Timeout, cfg.IdleTimeout)
+	app := rest.NewApp(log, storage, ssoClient, cfg)
 
 	go func() {
 		app.MustRun()

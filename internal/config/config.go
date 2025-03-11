@@ -9,24 +9,37 @@ import (
 )
 
 type Config struct {
-	Env string `env:"ENV" env-default:"local" env-required:"true"`
-	Storage
-	HTTPServer
+	Env          string        `yaml:"env" env-default:"local"`
+	Storage      Storage       `yaml:"storage"`
+	HTTPServer   HTTPServer    `yaml:"http_server"`
+	Clients      ClientsConfig `yaml:"clients"`
+	AppSecret    string        `yaml:"app_secret" env-required:"true"`
 }
 
 type HTTPServer struct {
-	Address     string        `env:"SERVER_ADDRESS" env-required:"true"`
-	Timeout     time.Duration `env:"SERVER_TIMEOUT" env-required:"true"`
-	IdleTimeout time.Duration `env:"SERVER_IDLE_TIMEOUT" env-required:"true"`
+	Address     string        `yaml:"address" env-required:"true"`
+	Timeout     time.Duration `yaml:"timeout" env-required:"true"`
+	IdleTimeout time.Duration `yaml:"idle_timeout" env-required:"true"`
 }
 
 type Storage struct {
-	Host     string `env:"DB_HOST" env-required:"true"`
-	Port     int    `env:"DB_PORT" env-default:"5432"`
-	DBName   string `env:"DB_NAME" env-required:"true"`
-	User     string `env:"DB_USER" env-required:"true"`
-	Password string `env:"DB_PASS" env-required:"true"`
-	SSLMode  string `env:"DB_SSL_MODE" env-default:"disable"`
+	Host     string `yaml:"host" env-required:"true"`
+	Port     int    `yaml:"port" env-default:"5432"`
+	DBName   string `yaml:"dbname" env-required:"true"`
+	User     string `yaml:"user" env-required:"true"`
+	Password string `yaml:"password" env-required:"true"`
+	SSLMode  string `yaml:"ssl_mode" env-default:"disable"`
+}
+
+type Client struct {
+	Address      string        `yaml:"address"`
+	Timeout      time.Duration `yaml:"timeout"`
+	RetriesCount int           `yaml:"retries_count"`
+	Insecure     bool          `yaml:"insecure"`
+}
+
+type ClientsConfig struct {
+	SSO Client `yaml:"sso"`
 }
 
 func MustLoad() *Config {

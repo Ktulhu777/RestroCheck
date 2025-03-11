@@ -13,12 +13,12 @@ import (
 func BuildStringConnectDB(cfg *config.Config) string {
 	var dbURL string = fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
-		cfg.User,
-		cfg.Password,
-		cfg.Host,
-		cfg.Port,
-		cfg.DBName,
-		cfg.SSLMode,
+		cfg.Storage.User,
+		cfg.Storage.Password,
+		cfg.Storage.Host,
+		cfg.Storage.Port,
+		cfg.Storage.DBName,
+		cfg.Storage.SSLMode,
 	)
 	return dbURL
 }

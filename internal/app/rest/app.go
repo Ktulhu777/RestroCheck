@@ -7,11 +7,15 @@ import (
 	"net/http"
 	"time"
 
-	"restrocheck/internal/transport/rest/handlers"
-	mwLogger "restrocheck/internal/transport/rest/middleware/logger"
+	ssogrpc "restrocheck/internal/app/grpc/sso"
+	"restrocheck/internal/config"
 	"restrocheck/internal/repository"
 	"restrocheck/internal/service"
 	"restrocheck/internal/storage"
+	"restrocheck/internal/transport/rest/handlers"
+	mwJWTAuth "restrocheck/internal/transport/rest/middleware/authentication/jwt"
+
+	mwLogger "restrocheck/internal/transport/rest/middleware/logger"
 	"restrocheck/pkg/logger/sl"
 
 	"github.com/go-chi/chi/v5"
@@ -23,15 +27,17 @@ type App struct {
 	log     *slog.Logger
 	server  *http.Server
 	storage storage.Storage
+	cfg     *config.Config
 }
 
-func NewApp(log *slog.Logger, storage *storage.Storage, address string, timeout, idleTimeout time.Duration) *App {
+func NewApp(log *slog.Logger, storage *storage.Storage, ssoapi *ssogrpc.Client, cfg *config.Config) *App {
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
 	router.Use(middleware.URLFormat)
 	router.Use(middleware.Recoverer)
 	router.Use(mwLogger.New(log))
+	
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
@@ -43,28 +49,34 @@ func NewApp(log *slog.Logger, storage *storage.Storage, address string, timeout,
 		Repos: repos,
 	})
 	waiterHandler := handlers.NewWaiterHandler(log, service.Waiter)
+	authJWTMiddleware := mwJWTAuth.JWTAuthIsAdminMiddleware(log, ssoapi, cfg.AppSecret)
 
-	router.Post("/waiter", waiterHandler.SaveWaiter())
-	router.Get("/waiter/{id}", waiterHandler.FetchWaiter())
-	router.Patch("/waiter/{id}", waiterHandler.ChangeWaiter())
-	router.Delete("/waiter/{id}", waiterHandler.RemoveWaiter())
-	router.Get("/waiters", waiterHandler.FetchAllWaiters())
+	router.Route("/", func(r chi.Router) {
+		r.Use(authJWTMiddleware) // Применяем middleware ко всем маршрутам
+	
+		r.Post("/waiter", waiterHandler.SaveWaiter())
+		r.Get("/waiter/{id}", waiterHandler.FetchWaiter())
+		r.Patch("/waiter/{id}", waiterHandler.ChangeWaiter())
+		r.Delete("/waiter/{id}", waiterHandler.RemoveWaiter())
+		r.Get("/waiters", waiterHandler.FetchAllWaiters())
+	})
+	
 
 	srv := &http.Server{
-		Addr:         address,
+		Addr:         cfg.HTTPServer.Address,
 		Handler:      router,
-		ReadTimeout:  timeout,
-		WriteTimeout: timeout,
-		IdleTimeout:  idleTimeout,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
 	}
 
 	return &App{
 		log:     log,
 		server:  srv,
 		storage: *storage,
+		cfg:     cfg,
 	}
 }
-
 
 func (a *App) Run() error {
 	const fn = "internal.app.rest.Run"
