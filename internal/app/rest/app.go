@@ -51,17 +51,24 @@ func NewApp(log *slog.Logger, storage *storage.Storage, ssoapi *ssogrpc.Client, 
 	
 	waiterHandler := handlers.NewWaiterHandler(log, service.Waiter)
 	categoryHandler := handlers.NewCategoryHandler(log, service.Category)
+	menuHandler := handlers.NewMenuHandler(log, service.Menu)
 	authJWTMiddleware := mwJWTAuth.JWTAuthIsAdminMiddleware(log, ssoapi, cfg.AppSecret)
 
 	router.Route("/", func(r chi.Router) {
 		r.Use(authJWTMiddleware)
-	
+
+		// waiter handlers
 		r.Post("/waiter", waiterHandler.SaveWaiter())
 		r.Get("/waiter/{id}", waiterHandler.FetchWaiter())
 		r.Patch("/waiter/{id}", waiterHandler.ChangeWaiter())
 		r.Delete("/waiter/{id}", waiterHandler.RemoveWaiter())
 		r.Get("/waiters", waiterHandler.FetchAllWaiters())
+
+		// category handlers
 		r.Post("/category", categoryHandler.SaveCategory())
+
+		// menu handlers
+		r.Post("/menu", menuHandler.SaveMenu())
 	})
 	
 

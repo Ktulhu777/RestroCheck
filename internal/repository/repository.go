@@ -3,13 +3,15 @@ package repository
 import "database/sql"
 
 type Repositories struct {
-	Waiters WaiterRepo
+	Waiters  WaiterRepo
 	Category CategoryRepo
+	Menu     MenuRepo
 }
 
 func NewRepositories(db *sql.DB) *Repositories {
 	return &Repositories{
-		Waiters: NewWaiterRepo(db),
+		Waiters:  NewWaiterRepo(db),
 		Category: NewCategoryRepo(db),
+		Menu:     NewMenuRepo(db),
 	}
 }

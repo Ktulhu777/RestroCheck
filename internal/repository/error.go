@@ -7,4 +7,5 @@ var (
 	ErrPhoneExists           error = errors.New("phone already exists") // Телефон уже существует
 	ErrEmptyCollectionWaiter error = errors.New("waiter list is empty") // Список официантов пуст
 	ErrCategoryNameExists    error = errors.New("category name already exists")
+	ErrMenuNameExists        error = errors.New("menu name already exists")
 )

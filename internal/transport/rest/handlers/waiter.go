@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"restrocheck/internal/core"
-	"restrocheck/internal/repository"
-	"restrocheck/internal/service"
+	rp "restrocheck/internal/repository"
+	sv "restrocheck/internal/service"
 	resp "restrocheck/pkg/response"
 
 	"github.com/go-chi/chi/v5"
@@ -21,10 +21,10 @@ import (
 
 type WaiterHandler struct {
 	log     *slog.Logger
-	service service.WaiterService
+	service sv.WaiterService
 }
 
-func NewWaiterHandler(log *slog.Logger, service service.WaiterService) *WaiterHandler {
+func NewWaiterHandler(log *slog.Logger, service sv.WaiterService) *WaiterHandler {
 	return &WaiterHandler{
 		log:     log,
 		service: service,
@@ -57,7 +57,7 @@ func (wh *WaiterHandler) SaveWaiter() http.HandlerFunc {
 			case errors.As(err, &validateErr):
 				resp.ValidationError(err.(validator.ValidationErrors), log, w, r, http.StatusBadRequest, err, "error validator")
 				return
-			case errors.Is(err, repository.ErrPhoneExists):
+			case errors.Is(err, rp.ErrPhoneExists):
 				resp.RespondWithError(log, w, r, http.StatusConflict, err, "phone already exists")
 				return
 			default:
@@ -94,7 +94,7 @@ func (wh *WaiterHandler) FetchWaiter() http.HandlerFunc {
 
 		wtr, err := wh.service.FetchWaiter(ctx, id)
 		if err != nil {
-			if errors.Is(err, repository.ErrWaiterNotFound) {
+			if errors.Is(err, rp.ErrWaiterNotFound) {
 				resp.RespondWithError(log, w, r, http.StatusNotFound, err, "waiter does not exist")
 				return
 			}
@@ -130,7 +130,7 @@ func (wh *WaiterHandler) RemoveWaiter() http.HandlerFunc {
 
 		id, err := wh.service.RemoveWaiter(ctx, pk)
 		if err != nil {
-			if errors.Is(err, repository.ErrWaiterNotFound) {
+			if errors.Is(err, rp.ErrWaiterNotFound) {
 				resp.RespondWithError(log, w, r, http.StatusNotFound, err, "waiter does not exist")
 				return
 			}
@@ -177,10 +177,10 @@ func (wh *WaiterHandler) ChangeWaiter() http.HandlerFunc {
 			case errors.As(err, &validateErr):
 				resp.ValidationError(err.(validator.ValidationErrors), log, w, r, http.StatusBadRequest, err, "error validator")
 				return
-			case errors.Is(err, repository.ErrPhoneExists):
+			case errors.Is(err, rp.ErrPhoneExists):
 				resp.RespondWithError(log, w, r, http.StatusConflict, err, "phone number already exists")
 				return
-			case errors.Is(err, repository.ErrWaiterNotFound):
+			case errors.Is(err, rp.ErrWaiterNotFound):
 				resp.RespondWithError(log, w, r, http.StatusNotFound, err, "waiter not found")
 				return
 			default:
@@ -210,7 +210,7 @@ func (wh *WaiterHandler) FetchAllWaiters() http.HandlerFunc {
 
 		waiters, err := wh.service.FetchAllWaiters(ctx)
 		if err != nil {
-			if errors.Is(err, repository.ErrEmptyCollectionWaiter) {
+			if errors.Is(err, rp.ErrEmptyCollectionWaiter) {
 				render.JSON(w, r, core.FetchAllWaiterResponse{
 					Response: resp.OK(),
 					Waiters:  []core.PartialWaiter{},

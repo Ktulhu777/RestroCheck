@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"restrocheck/internal/core"
-	"restrocheck/internal/repository"
+	rp "restrocheck/internal/repository"
 )
 
 type CategoryService interface {
@@ -12,10 +12,10 @@ type CategoryService interface {
 }
 
 type categoryService struct {
-	repo repository.CategoryRepo
+	repo rp.CategoryRepo
 }
 
-func NewCategoryService(categoryRepo repository.CategoryRepo) CategoryService {
+func NewCategoryService(categoryRepo rp.CategoryRepo) CategoryService {
 	return &categoryService{repo: categoryRepo}
 }
 

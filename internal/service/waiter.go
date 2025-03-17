@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"restrocheck/internal/core"
-	"restrocheck/internal/repository"
+	rp "restrocheck/internal/repository"
 	"time"
 )
 
@@ -16,10 +16,10 @@ type WaiterService interface {
 }
 
 type waiterService struct {
-	repo repository.WaiterRepo
+	repo rp.WaiterRepo
 }
 
-func NewWaiterService(waiterRepo repository.WaiterRepo) WaiterService {
+func NewWaiterService(waiterRepo rp.WaiterRepo) WaiterService {
 	return &waiterService{repo: waiterRepo}
 }
 

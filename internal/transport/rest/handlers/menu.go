@@ -5,42 +5,41 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"restrocheck/internal/core"
 	rp "restrocheck/internal/repository"
 	sv "restrocheck/internal/service"
 	resp "restrocheck/pkg/response"
+	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 )
 
-type CategoryHandler struct {
+type MenuHandler struct {
 	log     *slog.Logger
-	service sv.CategoryService
+	service sv.MenuService
 }
 
-func NewCategoryHandler(log *slog.Logger, service sv.CategoryService) *CategoryHandler {
-	return &CategoryHandler{
-		log: log,
+func NewMenuHandler(log *slog.Logger, service sv.MenuService) *MenuHandler {
+	return &MenuHandler{
+		log:     log,
 		service: service,
 	}
 }
 
-func (ch *CategoryHandler) SaveCategory() http.HandlerFunc {
+func (mh *MenuHandler) SaveMenu() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const fn = "handlers.category.SaveCategory"
+		const fn = "handlers.menu.SaveMenu"
 
-		log := ch.log.With(
+		log := mh.log.With(
 			slog.String("fn", fn),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
+		log.Info("Received request to save menu")
 
-		log.Info("Received request to save category")
-
-		var req core.CreateCategoryRequest
+		var req core.CreateMenuRequest
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			resp.RespondWithError(log, w, r, http.StatusBadRequest, err, "invalid JSON format")
 			return
@@ -49,25 +48,27 @@ func (ch *CategoryHandler) SaveCategory() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
 
-		id, err := ch.service.SaveCategory(ctx, req)
+		id, err := mh.service.SaveMenu(ctx, req)
+
 		if err != nil {
 			var validateErr validator.ValidationErrors
 			switch {
 			case errors.As(err, &validateErr):
 				resp.ValidationError(err.(validator.ValidationErrors), log, w, r, http.StatusBadRequest, err, "error validator")
 				return
-			case errors.Is(err, rp.ErrCategoryNameExists):
-				resp.RespondWithError(log, w, r, http.StatusConflict, err, "category already exists")
+			case errors.Is(err, rp.ErrMenuNameExists):
+				resp.RespondWithError(log, w, r, http.StatusConflict, err, "menu name already exists")
 				return
 			default:
-				resp.RespondWithError(log, w, r, http.StatusInternalServerError, err, "failed to save category")
+				resp.RespondWithError(log, w, r, http.StatusInternalServerError, err, "failed to save menu")
 				return
 			}
 		}
-		log.Info("category added", slog.Int64("id", id))
-		render.JSON(w, r, core.SaveCategoryResponse{
+
+		log.Info("menu added", slog.Int64("id", id))
+		render.JSON(w, r, core.SaveMenuResponse{
 			Response: resp.OK(),
-			ID:       id,
+			ID: id,
 		})
 	}
 }
