@@ -1,0 +1,1 @@
+CREATE INDEX idx_waiters_last_name ON waiters(last_name);

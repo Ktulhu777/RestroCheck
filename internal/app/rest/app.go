@@ -48,17 +48,20 @@ func NewApp(log *slog.Logger, storage *storage.Storage, ssoapi *ssogrpc.Client, 
 	service := service.NewService(service.Deps{
 		Repos: repos,
 	})
+	
 	waiterHandler := handlers.NewWaiterHandler(log, service.Waiter)
+	categoryHandler := handlers.NewCategoryHandler(log, service.Category)
 	authJWTMiddleware := mwJWTAuth.JWTAuthIsAdminMiddleware(log, ssoapi, cfg.AppSecret)
 
 	router.Route("/", func(r chi.Router) {
-		r.Use(authJWTMiddleware) // Применяем middleware ко всем маршрутам
+		r.Use(authJWTMiddleware)
 	
 		r.Post("/waiter", waiterHandler.SaveWaiter())
 		r.Get("/waiter/{id}", waiterHandler.FetchWaiter())
 		r.Patch("/waiter/{id}", waiterHandler.ChangeWaiter())
 		r.Delete("/waiter/{id}", waiterHandler.RemoveWaiter())
 		r.Get("/waiters", waiterHandler.FetchAllWaiters())
+		r.Post("/category", categoryHandler.SaveCategory())
 	})
 	
 

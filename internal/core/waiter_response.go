@@ -2,22 +2,23 @@ package core
 
 import resp "restrocheck/pkg/response"
 
-type SaveResponse struct {
+type SaveWaiterResponse struct {
+	// TODO: поменять потом на SaveWaiterResponse
 	resp.Response
 	ID int64 `json:"id"`
 }
 
-type FetchResponse struct {
+type FetchWaiterResponse struct {
 	resp.Response
 	Waiter *Waiter `json:"waiter"`
 }
 
-type RemoveResponse struct {
+type RemoveWaiterResponse struct {
 	resp.Response
 	ID int64 `json:"id"`
 }
 
-type ChangeResponse struct {
+type ChangeWaiterResponse struct {
 	resp.Response
 	Waiter *Waiter `json:"waiter"`
 }
@@ -27,7 +28,7 @@ type PartialWaiter struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 }
-type FetchAllResponse struct {
+type FetchAllWaiterResponse struct {
 	resp.Response
 	Waiters []PartialWaiter `json:"waiters"`
 }

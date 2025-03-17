@@ -5,7 +5,8 @@ import (
 )
 
 type Service struct {
-	Waiter WaiterService
+	Waiter   WaiterService
+	Category CategoryService
 }
 
 type Deps struct {
@@ -14,8 +15,10 @@ type Deps struct {
 
 func NewService(deps Deps) *Service {
 	waiterService := NewWaiterService(deps.Repos.Waiters)
+	categoryService := NewCategoryService(deps.Repos.Category)
 
 	return &Service{
-		Waiter: waiterService,
+		Waiter:   waiterService,
+		Category: categoryService,
 	}
 }

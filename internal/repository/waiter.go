@@ -43,7 +43,7 @@ func (w *WaiterRepository) SaveWaiter(
 
 	if err != nil {
 		if storage.IsDuplicatePhoneError(err) {
-			return 0, fmt.Errorf("%s: %w", fn, core.ErrPhoneExists)
+			return 0, fmt.Errorf("%s: %w", fn, ErrPhoneExists)
 		}
 		return 0, fmt.Errorf("%s: failed to insert waiter: %w", fn, err)
 	}
@@ -74,7 +74,7 @@ func (w *WaiterRepository) FetchWaiter(
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("%s: %w", fn, core.ErrWaiterNotFound)
+			return nil, fmt.Errorf("%s: %w", fn, ErrWaiterNotFound)
 		}
 		return nil, fmt.Errorf("%s: failed to fetch waiter: %w", fn, err)
 	}
@@ -126,11 +126,11 @@ func (w *WaiterRepository) ChangeWaiter(
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("%s: %w", fn, core.ErrWaiterNotFound)
+			return nil, fmt.Errorf("%s: %w", fn, ErrWaiterNotFound)
 		}
 
 		if storage.IsDuplicatePhoneError(err) {
-			return nil, fmt.Errorf("%s: %w", fn, core.ErrPhoneExists)
+			return nil, fmt.Errorf("%s: %w", fn, ErrPhoneExists)
 		}
 		return nil, fmt.Errorf("%s: failed to update waiter: %w", fn, err)
 	}
@@ -155,7 +155,7 @@ func (w *WaiterRepository) RemoveWaiter(ctx context.Context, pk int64) (int64, e
 	err := w.db.QueryRowContext(ctx, query, pk).Scan(&deletePK)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0, fmt.Errorf("%s: %w", fn, core.ErrWaiterNotFound)
+			return 0, fmt.Errorf("%s: %w", fn, ErrWaiterNotFound)
 		}
 		return 0, fmt.Errorf("%s: failed to delete waiter: %w", fn, err)
 	}
@@ -192,7 +192,7 @@ func (w *WaiterRepository) FetchAllWaiters(ctx context.Context) ([]core.Waiter, 
 	}
 
 	if len(waiters) == 0 {
-		return nil, fmt.Errorf("%s: %w", fn, core.ErrEmptyCollectionWaiter)
+		return nil, fmt.Errorf("%s: %w", fn, ErrEmptyCollectionWaiter)
 	}
 
 	return waiters, nil

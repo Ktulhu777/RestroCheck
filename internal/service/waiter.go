@@ -26,7 +26,7 @@ func NewWaiterService(waiterRepo repository.WaiterRepo) WaiterService {
 func (w *waiterService) SaveWaiter(ctx context.Context, req core.CreateWaiterRequest) (int64, error) {
 	if err := req.Validate(); err != nil {
 		return 0, err
-}
+	}
 
 	hireDate, err := time.Parse("2006-01-02", req.HireDate)
 	if err != nil {

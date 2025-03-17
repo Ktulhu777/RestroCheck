@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"restrocheck/internal/core"
+	"restrocheck/internal/repository"
 	"restrocheck/internal/service"
 	resp "restrocheck/pkg/response"
 
@@ -56,7 +57,7 @@ func (wh *WaiterHandler) SaveWaiter() http.HandlerFunc {
 			case errors.As(err, &validateErr):
 				resp.ValidationError(err.(validator.ValidationErrors), log, w, r, http.StatusBadRequest, err, "error validator")
 				return
-			case errors.Is(err, core.ErrPhoneExists):
+			case errors.Is(err, repository.ErrPhoneExists):
 				resp.RespondWithError(log, w, r, http.StatusConflict, err, "phone already exists")
 				return
 			default:
@@ -65,7 +66,7 @@ func (wh *WaiterHandler) SaveWaiter() http.HandlerFunc {
 			}
 		}
 		log.Info("waiter added", slog.Int64("id", id))
-		render.JSON(w, r, core.SaveResponse{
+		render.JSON(w, r, core.SaveWaiterResponse{
 			Response: resp.OK(),
 			ID:       id,
 		})
@@ -93,7 +94,7 @@ func (wh *WaiterHandler) FetchWaiter() http.HandlerFunc {
 
 		wtr, err := wh.service.FetchWaiter(ctx, id)
 		if err != nil {
-			if errors.Is(err, core.ErrWaiterNotFound) {
+			if errors.Is(err, repository.ErrWaiterNotFound) {
 				resp.RespondWithError(log, w, r, http.StatusNotFound, err, "waiter does not exist")
 				return
 			}
@@ -101,7 +102,7 @@ func (wh *WaiterHandler) FetchWaiter() http.HandlerFunc {
 			return
 		}
 		log.Info("waiter found", slog.Int64("waiter_id", id))
-		render.JSON(w, r, core.FetchResponse{
+		render.JSON(w, r, core.FetchWaiterResponse{
 			Response: resp.OK(),
 			Waiter:   wtr,
 		})
@@ -129,7 +130,7 @@ func (wh *WaiterHandler) RemoveWaiter() http.HandlerFunc {
 
 		id, err := wh.service.RemoveWaiter(ctx, pk)
 		if err != nil {
-			if errors.Is(err, core.ErrWaiterNotFound) {
+			if errors.Is(err, repository.ErrWaiterNotFound) {
 				resp.RespondWithError(log, w, r, http.StatusNotFound, err, "waiter does not exist")
 				return
 			}
@@ -137,7 +138,7 @@ func (wh *WaiterHandler) RemoveWaiter() http.HandlerFunc {
 			return
 		}
 		log.Info("waiter deleted successfully", slog.Int64("waiter_id", id))
-		render.JSON(w, r, core.RemoveResponse{
+		render.JSON(w, r, core.RemoveWaiterResponse{
 			Response: resp.OK(),
 			ID:       id,
 		})
@@ -176,10 +177,10 @@ func (wh *WaiterHandler) ChangeWaiter() http.HandlerFunc {
 			case errors.As(err, &validateErr):
 				resp.ValidationError(err.(validator.ValidationErrors), log, w, r, http.StatusBadRequest, err, "error validator")
 				return
-			case errors.Is(err, core.ErrPhoneExists):
+			case errors.Is(err, repository.ErrPhoneExists):
 				resp.RespondWithError(log, w, r, http.StatusConflict, err, "phone number already exists")
 				return
-			case errors.Is(err, core.ErrWaiterNotFound):
+			case errors.Is(err, repository.ErrWaiterNotFound):
 				resp.RespondWithError(log, w, r, http.StatusNotFound, err, "waiter not found")
 				return
 			default:
@@ -188,7 +189,7 @@ func (wh *WaiterHandler) ChangeWaiter() http.HandlerFunc {
 			}
 		}
 		log.Info("waiter updated successfully", slog.Int64("waiter_id", id))
-		render.JSON(w, r, core.ChangeResponse{
+		render.JSON(w, r, core.ChangeWaiterResponse{
 			Response: resp.OK(),
 			Waiter:   wtr,
 		})
@@ -209,8 +210,8 @@ func (wh *WaiterHandler) FetchAllWaiters() http.HandlerFunc {
 
 		waiters, err := wh.service.FetchAllWaiters(ctx)
 		if err != nil {
-			if errors.Is(err, core.ErrEmptyCollectionWaiter) {
-				render.JSON(w, r, core.FetchAllResponse{
+			if errors.Is(err, repository.ErrEmptyCollectionWaiter) {
+				render.JSON(w, r, core.FetchAllWaiterResponse{
 					Response: resp.OK(),
 					Waiters:  []core.PartialWaiter{},
 				})
@@ -230,7 +231,7 @@ func (wh *WaiterHandler) FetchAllWaiters() http.HandlerFunc {
 			}
 		}
 
-		render.JSON(w, r, core.FetchAllResponse{
+		render.JSON(w, r, core.FetchAllWaiterResponse{
 			Response: resp.OK(),
 			Waiters:  waitersResponse,
 		})
