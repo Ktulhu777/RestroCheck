@@ -17,30 +17,30 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type CategoryHandler struct {
+type PriceHandler struct {
 	log     *slog.Logger
-	service sv.CategoryService
+	service sv.PriceService
 }
 
-func NewCategoryHandler(log *slog.Logger, service sv.CategoryService) *CategoryHandler {
-	return &CategoryHandler{
+func NewPriceHandler(log *slog.Logger, service sv.PriceService) *PriceHandler {
+	return &PriceHandler{
 		log:     log,
 		service: service,
 	}
 }
 
-func (ch *CategoryHandler) SaveCategory() http.HandlerFunc {
+func (ph *PriceHandler) SavePrice() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const fn = "handlers.category.SaveCategory"
+		const fn = "handlers.price.SavePrice"
 
-		log := ch.log.With(
+		log := ph.log.With(
 			slog.String("fn", fn),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		log.Info("Received request to save category")
+		log.Info("Received request to save price")
 
-		var req core.CreateCategoryRequest
+		var req core.CreatePriceRequest
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			resp.RespondWithError(log, w, r, http.StatusBadRequest, err, "invalid JSON format")
 			return
@@ -49,23 +49,24 @@ func (ch *CategoryHandler) SaveCategory() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
 
-		id, err := ch.service.SaveCategory(ctx, req)
+		id, err := ph.service.SavePice(ctx, req)
 		if err != nil {
 			var validateErr validator.ValidationErrors
 			switch {
 			case errors.As(err, &validateErr):
 				resp.ValidationError(err.(validator.ValidationErrors), log, w, r, http.StatusBadRequest, err, "error validator")
 				return
-			case errors.Is(err, rp.ErrCategoryNameExists):
-				resp.RespondWithError(log, w, r, http.StatusConflict, err, "category already exists")
+			case errors.Is(err, rp.ErrPriceUnique):
+				resp.RespondWithError(log, w, r, http.StatusConflict, err, "price must unique")
 				return
 			default:
-				resp.RespondWithError(log, w, r, http.StatusInternalServerError, err, "failed to save category")
+				resp.RespondWithError(log, w, r, http.StatusInternalServerError, err, "server error")
 				return
 			}
 		}
-		log.Info("category added", slog.Int64("id", id))
-		render.JSON(w, r, core.SaveCategoryResponse{
+
+		log.Info("Price added in DataBase: ", slog.Int64("ID", id))
+		render.JSON(w, r, core.SavePriceResponse{
 			Response: resp.OK(),
 			ID:       id,
 		})

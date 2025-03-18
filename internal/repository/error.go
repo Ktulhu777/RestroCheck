@@ -8,4 +8,5 @@ var (
 	ErrEmptyCollectionWaiter error = errors.New("waiter list is empty") // Список официантов пуст
 	ErrCategoryNameExists    error = errors.New("category name already exists")
 	ErrMenuNameExists        error = errors.New("menu name already exists")
+	ErrPriceUnique           error = errors.New("price must unique")
 )

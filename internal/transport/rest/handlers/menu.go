@@ -68,7 +68,7 @@ func (mh *MenuHandler) SaveMenu() http.HandlerFunc {
 		log.Info("menu added", slog.Int64("id", id))
 		render.JSON(w, r, core.SaveMenuResponse{
 			Response: resp.OK(),
-			ID: id,
+			ID:       id,
 		})
 	}
 }
