@@ -1,0 +1,1 @@
+ALTER TABLE orders ALTER COLUMN completed_at TYPE TIMESTAMP USING completed_at::TIMESTAMP;

@@ -7,6 +7,7 @@ type Repositories struct {
 	Category CategoryRepo
 	Menu     MenuRepo
 	Price    PriceRepo
+	Order    OrderRepo
 }
 
 func NewRepositories(db *sql.DB) *Repositories {
@@ -15,5 +16,6 @@ func NewRepositories(db *sql.DB) *Repositories {
 		Category: NewCategoryRepo(db),
 		Menu:     NewMenuRepo(db),
 		Price:    NewPriceRepo(db),
+		Order:    NewOrderRepo(db),
 	}
 }

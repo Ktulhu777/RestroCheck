@@ -53,6 +53,7 @@ func NewApp(log *slog.Logger, storage *storage.Storage, ssoapi *ssogrpc.Client, 
 	categoryHandler := handlers.NewCategoryHandler(log, service.Category)
 	menuHandler := handlers.NewMenuHandler(log, service.Menu)
 	priceHandler := handlers.NewPriceHandler(log, service.Price)
+	orderHandler := handlers.NewOrderHandler(log, service.Order)
 	authJWTMiddleware := mwJWTAuth.JWTAuthIsAdminMiddleware(log, ssoapi, cfg.AppSecret)
 
 	router.Route("/", func(r chi.Router) {
@@ -73,6 +74,9 @@ func NewApp(log *slog.Logger, storage *storage.Storage, ssoapi *ssogrpc.Client, 
 
 		// price handlers
 		r.Post("/price", priceHandler.SavePrice())
+
+		// order handlers
+		r.Post("/order", orderHandler.SaveOrder())
 	})
 	
 

@@ -9,6 +9,7 @@ type Service struct {
 	Category CategoryService
 	Menu     MenuService
 	Price    PriceService
+	Order    OrderService
 }
 
 type Deps struct {
@@ -20,11 +21,13 @@ func NewService(deps Deps) *Service {
 	categoryService := NewCategoryService(deps.Repos.Category)
 	menuService := NewMenuService(deps.Repos.Menu)
 	priceService := NewPriceService(deps.Repos.Price)
+	orderService := NewOrderService(deps.Repos.Order)
 
 	return &Service{
 		Waiter:   waiterService,
 		Category: categoryService,
 		Menu:     menuService,
 		Price:    priceService,
+		Order: orderService,
 	}
 }
