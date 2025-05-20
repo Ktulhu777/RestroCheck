@@ -32,11 +32,14 @@ func (p *PriceRepository) SavePrice(ctx context.Context, menuItemID int64, size 
 
 	err = p.db.QueryRowContext(ctx, query, menuItemID, size, price).Scan(&id)
 	if err != nil {
-		// TODO: надо доделать
-		// "error": "internal.repository.price.SavePrice: failed to insert price: pq: новая строка в отношении \"prices\" нарушает ограничение-проверку \"prices_size_check\"",
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
-			return 0, fmt.Errorf("%s: %w", fn, ErrPriceUnique)
+		if errors.As(err, &pqErr) {
+			switch pqErr.Code {
+			case "23505":
+				return 0, fmt.Errorf("%s: %w", fn, ErrPriceUnique)
+			case "23503":
+				return 0, fmt.Errorf("%s: foreign key violation (menu_item_id not found): %w", fn, ErrMenuIdDoesNotExists)
+			}
 		}
 		return 0, fmt.Errorf("%s: failed to insert price: %w", fn, err)
 	}

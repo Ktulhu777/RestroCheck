@@ -59,6 +59,9 @@ func (ph *PriceHandler) SavePrice() http.HandlerFunc {
 			case errors.Is(err, rp.ErrPriceUnique):
 				resp.RespondWithError(log, w, r, http.StatusConflict, err, "price must unique")
 				return
+			case errors.Is(err, rp.ErrMenuIdDoesNotExists):
+				resp.RespondWithError(log, w, r, http.StatusNotFound, err, "This dish does not exist")
+				return
 			default:
 				resp.RespondWithError(log, w, r, http.StatusInternalServerError, err, "server error")
 				return

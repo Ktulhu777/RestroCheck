@@ -9,4 +9,5 @@ var (
 	ErrCategoryNameExists    error = errors.New("category name already exists")
 	ErrMenuNameExists        error = errors.New("menu name already exists")
 	ErrPriceUnique           error = errors.New("price must unique")
+	ErrMenuIdDoesNotExists   error = errors.New("this dish does not exist")
 )
