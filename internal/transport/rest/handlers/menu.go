@@ -59,6 +59,9 @@ func (mh *MenuHandler) SaveMenu() http.HandlerFunc {
 			case errors.Is(err, rp.ErrMenuNameExists):
 				resp.RespondWithError(log, w, r, http.StatusConflict, err, "menu name already exists")
 				return
+			case errors.Is(err, rp.ErrCategoryIdNotExists):
+				resp.RespondWithError(log, w, r, http.StatusNotFound, err, "this category does not exists")
+				return
 			default:
 				resp.RespondWithError(log, w, r, http.StatusInternalServerError, err, "failed to save menu")
 				return

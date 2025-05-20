@@ -33,11 +33,14 @@ func (m *MenuRepository) SaveMenu(ctx context.Context, name, photoURL string, ca
 	err = m.db.QueryRowContext(ctx, query, name, photoURL, categoryID).Scan(&id)
 
 	if err != nil {
-		// TODO: Доделать
-		// "error": "internal.repository.menu.SaveMenu: failed to insert menu name: pq: INSERT или UPDATE в таблице \"menu\" нарушает ограничение внешнего ключа \"menu_category_id_fkey
-
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+		if errors.As(err, &pqErr) {
+			switch pqErr.Code {
+			case "23505":
+				return 0, fmt.Errorf("%s: %w", fn, ErrMenuNameExists)
+			case "23503":
+				return 0, fmt.Errorf("%s: foreign key violation (menu_category_id_fkey not found): %w", fn, ErrCategoryIdNotExists)
+			}
 			return 0, fmt.Errorf("%s: %w", fn, ErrMenuNameExists)
 		}
 		return 0, fmt.Errorf("%s: failed to insert menu name: %w", fn, err)
