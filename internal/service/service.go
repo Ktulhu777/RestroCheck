@@ -28,6 +28,6 @@ func NewService(deps Deps) *Service {
 		Category: categoryService,
 		Menu:     menuService,
 		Price:    priceService,
-		Order: orderService,
+		Order:    orderService,
 	}
 }

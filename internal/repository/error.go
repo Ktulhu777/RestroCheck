@@ -11,4 +11,5 @@ var (
 	ErrPriceUnique           error = errors.New("price must unique")
 	ErrMenuIdDoesNotExists   error = errors.New("this dish does not exist")
 	ErrCategoryIdNotExists   error = errors.New("this category does not exist")
+	ErrPriceInvalidSize      error = errors.New("invalid size for price")
 )

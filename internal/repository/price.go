@@ -39,6 +39,8 @@ func (p *PriceRepository) SavePrice(ctx context.Context, menuItemID int64, size 
 				return 0, fmt.Errorf("%s: %w", fn, ErrPriceUnique)
 			case "23503":
 				return 0, fmt.Errorf("%s: foreign key violation (menu_item_id not found): %w", fn, ErrMenuIdDoesNotExists)
+			case "23514":
+				return 0, fmt.Errorf("%s: %w (size=%q)", fn, ErrPriceInvalidSize, size)
 			}
 		}
 		return 0, fmt.Errorf("%s: failed to insert price: %w", fn, err)
