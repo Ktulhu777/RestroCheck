@@ -61,12 +61,20 @@ func (o *OrderRepository) SaveOrder(
 	}
 
 	stmt, err := tx.PrepareContext(ctx, `
-    INSERT INTO order_items(order_id, menu_item_id, category, quantity, price)
-    SELECT $1, menu.id, $2, $3, prices.price
-    FROM menu
-    JOIN prices ON menu.id = prices.menu_item_id AND prices.id = $4
-    WHERE menu.id = $5
-`)
+		INSERT INTO order_items(order_id, menu_item_id, category, quantity, price)
+		SELECT
+			$1,                            -- order_id (int8 → bigint)
+			menu.id,                       -- menu_item_id (int)
+			$2,                            -- category (text или varchar)
+			$3::INTEGER,                   -- явное приведение к INTEGER
+			prices.price * $3::NUMERIC     -- умножаем на NUMERIC
+		FROM menu
+		JOIN prices
+		ON menu.id = prices.menu_item_id
+		AND prices.id = $4
+		WHERE menu.id = $5
+	`)
+
 
 	if err != nil {
 		tx.Rollback()

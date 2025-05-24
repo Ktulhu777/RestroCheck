@@ -34,7 +34,7 @@ func main() {
 		os.Exit(1)
 	}
 	log.Info("SSO gRPC client successfully initialized")
-	log.Info("SSO gRPC client created", slog.Any("client", ssoClient))
+	log.Info("SSO gRPC client created", slog.Any("client", cfg.Clients))
 
 	storage, err := postgresql.NewStorage(cfg)
 	if err != nil {

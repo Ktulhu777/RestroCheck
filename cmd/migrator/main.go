@@ -40,5 +40,5 @@ func main() {
 		}
 		panic(err)
 	}
-	fmt.Println("migrations applied successfull")
+	fmt.Println("migrations applied successful")
 }
